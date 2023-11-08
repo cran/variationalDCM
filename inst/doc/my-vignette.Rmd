@@ -1,0 +1,73 @@
+---
+title: "variationalDCM vignette"
+author: "Keiichiro Hijikata"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{variationalDCM vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+`variationalDCM` is an R package that performs recently-developed variational Bayesian inference for diagnostic classification models (DCMs), which are a family of statistical models for collecting, analyzing, and reporting diagnostic information in Education and Psychology.
+
+# DCMs
+
+Diagnostic assessment is a type of evaluation process that is used to diagnose the respondent's current status of knowledge, skills, abilities, or other characteristics in a particular domain. These underlying traits are collectively called **attributes** in the literature of DCMs. By identifying the mastery status of each respondent, the diagnostic results can help tailor instruction, intervention, and support to address the specific needs of the respondent.
+
+DCMs have a lot of sub-models and we introduce some models related to this package.
+
+## DINA model
+
+The deterministic input noisy AND gate (DINA) model is representative of a non-compensatory model, which assumes that respondents must have mastered all the required attributes associated with a particular item to respond correctly.
+
+## DINO model
+
+The deterministic input noisy OR gate (DINO) model is another well-known model. In contrast to the DINA model, the DINO model is one of the compensatory models, which assumes that obtaining a correct response to an item necessitates mastery of at least one of the relevant attributes.
+
+## saturated DCM
+
+The saturated DCM is a saturated formulation of DCMs, which contain as many parameters as possible under the given item-attribute relationship. This generalized models include the DINA and DINO models as the most parsimonious special cases, as well as many other sub-models that differ in their degree of generalization and parsimony.
+
+## multiple choices DINA model
+
+The multiple-choice format, in which respondents are required to select the most appropriate option from the given multiple options, is one of the most widely used formats of items in assessments. To provide a comprehensive and informative diagnostic assessment based on the responses for multiple-choice items, the multiple-choice DINA (MC-DINA) model was developed as an extension of the DINA model, which was originally for binary response data.
+
+## hidden Markov DCM
+
+The hidden Markov DCM (HM-DCM) is an extended model to the longitudinal item response data to model the time course of learning multiple attributes. The HM-DCM allows researchers to model the transition in mastery statuses over time.
+
+# Functions
+
+The below table summarizes the five functions that the `variationalDCM` package provides, corresponding models, and reference information for the papers that proposed their variational Bayesian estimation.
+
+| Function Name | Functionality                  | Reference                       |
+|------------------|---------------------------|----------------------------|
+| `dina()`      | the DINA model                 | Yamaguchi & Okada (2020b)       |
+| `dino()`      | the DINO model                 | slight modification of `dina()` |
+| `satu_dcm()`  | the saturated DCM              | Yamaguchi & Okada (2020a)       |
+| `mc_dina()`   | the multiple-choice DINA model | Yamaguchi (2020)                |
+| `hm_dcm()`    | the hidden Markov DCM          | Yamaguchi & Martinez (2023)     |
+
+details of the above functions such as arguments and returns are given in .R script of each function.
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# References
+
+-   Oka, M., & Okada, K. (2023). Scalable Bayesian Approach for the Dina Q-Matrix Estimation Combining Stochastic Optimization and Variational Inference. *Psychometrika*, 88, 302–331. <https://doi.org/10.1007/s11336-022-09884-4>
+
+-   Yamaguchi, K., & Okada, K. (2020b). Variational Bayes Inference for the DINA Model. *Journal of Educational and Behavioral Statistics*, 45(5), 569--597. <https://doi.org/10.3102/1076998620911934>
+
+-   Yamaguchi, K., Okada, K. (2020a). Variational Bayes Inference Algorithm for the Saturated Diagnostic Classification Model. *Psychometrika*, 85(4), 973--995. <https://doi.org/10.1007/s11336-020-09739-w>
+
+-   Yamaguchi, K. (2020). Variational Bayesian inference for the multiple-choice DINA model. *Behaviormetrika*, 47(1), 159-187. <https://doi.org/10.1007/s41237-020-00104-w>
+
+-   Yamaguchi, K., & Martinez, A. J. (2023). Variational Bayes inference for hidden Markov diagnostic classification models. *British Journal of Mathematical and Statistical Psychology*. <https://doi.org/10.1111/bmsp.12308>
