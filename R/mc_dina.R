@@ -25,7 +25,7 @@ make_G_mat <- function(Q){
     Q_j    <- Q_j[,not_0_col, drop = F]
     A_temp <- A[,not_0_col,drop =F]
 
-    G_j <- matrix(NA,nrow=nrow(Q_j), ncol=L)
+    G_j <- matrix(0,nrow=nrow(Q_j), ncol=L)
 
     q_patt <- apply(Q_j[rowSums(Q_j) != 0, ,drop = F], 1, function(x)paste0(x,collapse=""))
     alp_patt <- apply(A_temp, 1, function(x)paste0(x,collapse=""))
@@ -46,8 +46,10 @@ make_G_mat <- function(Q){
   list(G_mat = G_mat, H = H,  A  = A)
 }
 
-#' the artificial data generation for the multiple-choice DINA model based on the given Q-matrix
-#' \code{mc_dina_data_gen()} returns the artificially generated item response data for the MC-DINA model
+#' @title the artificial data generation for the multiple-choice DINA model based on the given Q-matrix
+#'
+#' @description \code{mc_dina_data_gen()} returns the artificially generated item response data for the MC-DINA model
+#'
 #' @param Q the J by K binary matrix
 #' @param I the number of assumed respondents
 #' @param att_cor the true value of the correlation among attributes (default: 0.1)
@@ -201,52 +203,7 @@ extend_X <- function(X){
   X_ijh
 }
 
-#' for the multiple-choice deterministic input noisy AND gate (MC-DINA) model.
-#'
-#' \code{mc_dina()} returns variational Bayesian estimates for the MC-DINA model.
-#'
-#' @param X I by J binary matrix, item response data
-#' @param Q J by (K+2)matrix, Q-matrix for MC-DINA, Column 1: Item number, Column 2: Stem, Column 3 to end: Attributes
-#' @param max_it The maximum number of iterations (default: 500)
-#' @param epsilon The convergence tolerance for iterations (default: 1e-4)
-#' @param seed The seed value (default: 123)
-#' @param verbose Logical, controls whether to print progress (default: TRUE)
-#' @param delta_0 the value of hyperparameter \eqn{\delta^0} (default: NULL)
-#' @param a_0 the value of hyperparameter \eqn{a^0} (default: NULL)
-#'
-#' @return A list including:
-#' \describe{
-#'   \item{theta_est}{the estimate of the conditional response probability parameter \eqn{\Theta}}
-#'   \item{theta_sd}{the posterior standard deviation of parameter \eqn{\Theta}}
-#'   \item{pi_est}{the estimates of class mixing parameter \eqn{\pi}}
-#'   \item{pi_sd}{the posterior standard deviations of class mixing parameter \eqn{\pi}}
-#   \item{r_il}{the expectation of the attribute mastery pattern conditioned by the categorical distribution}
-#'   \item{a_ast}{the estimate of variational parameter \eqn{a^*}}
-#'   \item{delta_ast}{the estimate of variational parameter \eqn{\delta^*}}
-#'   \item{a_0}{the value of hyperparameter \eqn{a^0}}
-#'   \item{delta_0}{the value of hyperparamter \eqn{\delta^0}}
-#'   \item{l_lb}{the list of the values of evidence lower bound in each itertion}
-#'   \item{att_pat_est}{the estimated attribute mastery patterns}
-#   \item{A}{all the possible attribute mastery patterns}
-#   \item{Q}{the entered Q-matrix}
-#   \item{X}{the entered data matrix}
-#'   \item{G-mat}{the computed G-matrix}
-#'   \item{m}{the number of performed iterations}
-#'   \item{seed}{the entered seed number}
-#' }
-#'
-#' @references Yamaguchi, K. (2020). Variational Bayesian inference for the
-#'   multiple-choice DINA model. \emph{Behaviormetrika}, 47(1), 159-187.
-#'   \doi{10.1007/s41237-020-00104-w}
-#'
-#' @examples
-#' # load a simulated Q-matrix and make simulated data
-#' mc_Q = mc_sim_Q
-#' mc_sim_data = mc_dina_data_gen(Q=mc_Q,I=200)
-#' # fit multiple-choice DINA model
-#' res_mc = mc_dina(X=mc_sim_data$X, Q=mc_Q)
-#'
-#' @export
+
 
 #
 # VB script
@@ -256,13 +213,12 @@ mc_dina = function(
     Q,
     max_it  = 500,
     epsilon = 1e-04,
-    seed = 123,
     verbose = TRUE,
     # hyperparameter
     delta_0 = NULL,
     a_0 = NULL
 ){
-  set.seed(seed)
+
 
   if(!inherits(X, "matrix")){
       X <- as.matrix(X)
@@ -300,7 +256,6 @@ mc_dina = function(
     a_0 = lapply(1:J, function(j) matrix(1, nrow = max(H[[j]]), ncol=nrow(G_mat[[j]]) ))
   }
 
-
   #
   # Objects for estimates
   #
@@ -329,8 +284,8 @@ mc_dina = function(
 
 
   m = 1
-  l_lb = rep(NA, max_it+1)
-  l_lb[1] = 100
+  l_lb = rep(0, max_it+1)
+  l_lb[1] = -Inf
   for(m in 1:max_it){
 
     #
@@ -413,7 +368,7 @@ mc_dina = function(
 
     if(abs(l_lb[m] - l_lb[m+1]) < epsilon){
       if(verbose){
-        cat("\nreached convergence.")
+        cat("\nreached convergence.\n")
       }
       break()
     }
@@ -430,9 +385,12 @@ mc_dina = function(
   theta_est <- lapply(1:J, function(j) a_ast[[j]] %*% diag(1/a_ast_sum[[j]]))
   theta_sd <- lapply(1:J, function(j) sqrt(a_ast[[j]]*( matrix(rep(1,max(H[[j]]),ncol=1 )) %*% a_ast_sum[[j]] - a_ast[[j]]) %*% diag(1/(a_ast_sum[[j]]^2*(a_ast_sum[[j]]+1)) )))
 
+  model_params = list(
+    theta_est = theta_est,
+    theta_sd = theta_sd
+  )
 
-  list(theta_est = theta_est,
-       theta_sd = theta_sd,
+  res = list(model_params = model_params,
        pi_est = pi_est,
        pi_sd = pi_sd,
        #r_il  = r_il,
@@ -440,14 +398,12 @@ mc_dina = function(
        delta_ast   = delta_ast,
        a_0 = a_0,
        delta_0 = delta_0,
-       l_lb = l_lb,
+       l_lb = l_lb[l_lb != 0],
        att_pat_est = A[apply(r_il, 1, which.max),],
-       #A = A,
-       #Q = Q,
-       #X = X,
        G_mat = G_mat,
-       m = m,
-       seed = seed)
+       m = m)
+
+  return(res)
 }
 
 

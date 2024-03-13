@@ -2,7 +2,7 @@
 
 **variationalDCM** is an R package that performs recently-developed variational Bayesian inference for diagnostic classification models (DCMs), which are a family of statistical models for collecting, analyzing, and reporting diagnostic information in Education and Psychology.
 
-You can install this package from CRAN. Alternatively, a development version can be installed using the devtools package:
+You can install this package from CRAN at <https://cran.r-project.org/package=variationalDCM>. Alternatively, a development version can be installed using the devtools package:
 
 ``` r
 if(!require(devtools)){
