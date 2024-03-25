@@ -2,18 +2,18 @@
 % Please edit documentation in R/mc_dina.R
 \name{mc_dina_data_gen}
 \alias{mc_dina_data_gen}
-\title{the artificial data generation for the multiple-choice DINA model based on the given Q-matrix}
+\title{Artificial data generating function for the multiple-choice DINA model based on the given Q-matrix}
 \usage{
-mc_dina_data_gen(I, Q, att_cor = 0.1, seed = 1234)
+mc_dina_data_gen(I, Q, att_cor = 0.1, seed = 17)
 }
 \arguments{
 \item{I}{the number of assumed respondents}
 
-\item{Q}{the J by K binary matrix}
+\item{Q}{the \eqn{J \times K} binary matrix}
 
 \item{att_cor}{the true value of the correlation among attributes (default: 0.1)}
 
-\item{seed}{the seed value used for random number generation (default: 1234)}
+\item{seed}{the seed value used for random number generation (default: 17)}
 }
 \value{
 A list including:

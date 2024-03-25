@@ -46,14 +46,14 @@ make_G_mat <- function(Q){
   list(G_mat = G_mat, H = H,  A  = A)
 }
 
-#' @title the artificial data generation for the multiple-choice DINA model based on the given Q-matrix
+#' @title Artificial data generating function for the multiple-choice DINA model based on the given Q-matrix
 #'
 #' @description \code{mc_dina_data_gen()} returns the artificially generated item response data for the MC-DINA model
 #'
-#' @param Q the J by K binary matrix
+#' @param Q the \eqn{J \times K} binary matrix
 #' @param I the number of assumed respondents
 #' @param att_cor the true value of the correlation among attributes (default: 0.1)
-#' @param seed the seed value used for random number generation (default: 1234)
+#' @param seed the seed value used for random number generation (default: 17)
 #' @return A list including:
 #' \describe{
 #'   \item{X}{the generated artificial item response data}
@@ -73,7 +73,7 @@ make_G_mat <- function(Q){
 #
 # Data generation function------
 #
-mc_dina_data_gen <- function(I, Q, att_cor = 0.1, seed = 1234){
+mc_dina_data_gen <- function(I, Q, att_cor = 0.1, seed = 17){
   set.seed(seed)
 
   J <- max(Q[,1])

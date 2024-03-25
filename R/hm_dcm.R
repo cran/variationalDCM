@@ -1,8 +1,8 @@
-#' @title the artificial data generation for the hidden-Markov DCM based on the given Q-matrix
+#' @title Artificial data generating function for the hidden-Markov DCM based on the given Q-matrix
 #'
 #' @description \code{hm_dcm_data_gen()} returns the artificially generated item response data for the HM-DCM
 #'
-#' @param Q the J by K binary matrix
+#' @param Q the \eqn{J \times K} binary matrix
 #' @param I the number of assumed respondents
 #' @param min_theta the minimum value of the item parameter \eqn{\theta_{jht}}
 #' @param max_theta the maximum value of the item parameter \eqn{\theta_{jht}}
@@ -14,9 +14,9 @@
 #'   \item{alpha_true}{the generated true vale of the attribute mastery pattern, matrix form}
 #'   \item{alpha_patt_true}{the generated true vale of the attribute mastery pattern, string form}
 #' }
-#' @references Yamaguchi, K., & Martinez, A. J. (2023). Variational Bayes
+#' @references Yamaguchi, K., & Martinez, A. J. (2024). Variational Bayes
 #' inference for hidden Markov diagnostic classification models. \emph{British Journal
-#' of Mathematical and Statistical Psychology}, 00, 1– 25. \doi{10.1111/bmsp.12308}
+#' of Mathematical and Statistical Psychology}, 77(1), 55–79. \doi{10.1111/bmsp.12308}
 #'
 #' @examples
 #' indT = 3
@@ -30,7 +30,7 @@ hm_dcm_data_gen <- function(I = 500,
                            Q,
                            min_theta = 0.2,
                            max_theta = 0.8,
-                           att_cor = 0.7,
+                           att_cor = 0.1,
                            seed = 17
 ){
   indI = I
@@ -195,7 +195,7 @@ hmdcm_vb = function(
     A_0 = NULL,
     B_0 = NULL,
     delta_0 = NULL,
-    ommega_0 = NULL,
+    omega_0 = NULL,
     max_it  = 500,
     epsilon = 1e-04,
     random_start = FALSE,
@@ -276,8 +276,8 @@ hmdcm_vb = function(
 
   }
 
-  if(is.null(ommega_0) ){
-    ommega_0 = matrix(1,indL,indL)# For Tau matrix
+  if(is.null(omega_0) ){
+    omega_0 = matrix(1,indL,indL)# For Tau matrix
 
   }
 
@@ -352,7 +352,7 @@ hmdcm_vb = function(
   #
 
 
-  llb_fun <- function(delta_ast,delta_0,ommega_ast,ommega_0, A_ast, A_0, B_ast, B_0, log_zeta_sum){
+  llb_fun <- function(delta_ast,delta_0,omega_ast,omega_0, A_ast, A_0, B_ast, B_0, log_zeta_sum){
 
     A_0_unlist <- unlist(A_0)
     B_0_unlist <- unlist(B_0)
@@ -365,7 +365,7 @@ hmdcm_vb = function(
 
     tmp3 <- 0
     for(l in 1:indL){
-      tmp3 <- tmp3 + (sum(lgamma(ommega_ast[l,])) - lgamma(sum(ommega_ast[l,])))  - (sum(lgamma(ommega_0[l,])) - lgamma(sum(ommega_0[l,]))) + sum((ommega_0[l,] - ommega_ast[l,])*(digamma(ommega_ast[l,]) - digamma(sum(ommega_ast[l,]))) )
+      tmp3 <- tmp3 + (sum(lgamma(omega_ast[l,])) - lgamma(sum(omega_ast[l,])))  - (sum(lgamma(omega_0[l,])) - lgamma(sum(omega_0[l,]))) + sum((omega_0[l,] - omega_ast[l,])*(digamma(omega_ast[l,]) - digamma(sum(omega_ast[l,]))) )
     }
 
 
@@ -378,7 +378,7 @@ hmdcm_vb = function(
   #
   E_log_theta <- E_log_1_theta <- B_ast <- A_ast <- A_0
   delta_ast <- delta_0
-  ommega_ast <- ommega_0
+  omega_ast <- omega_0
 
 
   b_z_it <- f_z_it <- array(0, dim=c(indI, indL ,indT) )
@@ -396,10 +396,10 @@ hmdcm_vb = function(
     # M-step and Calculation of Expectations
     #
     delta_ast <- colSums(E_z_itl[,,1]) + delta_0
-    ommega_ast <- apply(E_z_itl_z_itm1l, c(2,3),sum) + ommega_0 #Check this point
+    omega_ast <- apply(E_z_itl_z_itm1l, c(2,3),sum) + omega_0 #Check this point
 
     E_log_pi      = digamma(delta_ast) - digamma(sum(delta_ast))
-    E_log_tau     = digamma(ommega_ast) - digamma(rowSums(ommega_ast))
+    E_log_tau     = digamma(omega_ast) - digamma(rowSums(omega_ast))
     for(time_t in 1:indT){
 
       A_ast[[time_t]]  <- lapply(1:indJt[[time_t]], function(j) t(G_jt[[time_t]][[j]] %*% (t(E_z_itl[,,time_t]) %*% X[[time_t]][,j])     + A_0[[time_t]][[j]] ))
@@ -481,7 +481,7 @@ hmdcm_vb = function(
 
     log_zeta_sum <- sum(log(gamma_t_x_it))
 
-    l_lb[m+1] <- llb_fun(delta_ast,delta_0,ommega_ast,ommega_0, A_ast, A_0, B_ast, B_0, log_zeta_sum)
+    l_lb[m+1] <- llb_fun(delta_ast,delta_0,omega_ast,omega_0, A_ast, A_0, B_ast, B_0, log_zeta_sum)
 
     if(verbose){
       cat("\riteration = ", m+1, sprintf(",last change = %.05f", abs(l_lb[m] - l_lb[m+1])))
@@ -507,10 +507,10 @@ hmdcm_vb = function(
   names(pi_est) <- att_pat
   names(pi_sd)  <- att_pat
 
-  ommega_sum <- rowSums(ommega_ast)
-  Tau_est <-  ommega_ast/ommega_sum
+  omega_sum <- rowSums(omega_ast)
+  Tau_est <-  omega_ast/omega_sum
   Tau_sd <- matrix(0, indL, indL)
-  for(l in 1:indL) Tau_sd[,l] <- sqrt(ommega_ast[,l]*(ommega_sum - ommega_ast[,l])/(ommega_sum^2*(ommega_sum+1)) )
+  for(l in 1:indL) Tau_sd[,l] <- sqrt(omega_ast[,l]*(omega_sum - omega_ast[,l])/(omega_sum^2*(omega_sum+1)) )
 
   colnames(Tau_est) <- att_pat
   row.names(Tau_est) <- att_pat
@@ -554,13 +554,13 @@ hmdcm_vb = function(
        A_ast = A_ast,
        B_ast = B_ast,
        delta_ast   = delta_ast,
-       ommega_ast   = ommega_ast,
+       omega_ast   = omega_ast,
        E_z_itl = E_z_itl,
        E_z_itl_z_itm1l = E_z_itl_z_itm1l,
        A_0 = A_0,
        B_0 = B_0,
        delta_0 = delta_0,
-       ommega_0 = ommega_0,
+       omega_0 = omega_0,
        l_lb = l_lb,
        gamma_t_x_it = gamma_t_x_it,
        log_zeta_sum = log_zeta_sum,
@@ -579,7 +579,7 @@ hmdcm_vb_nondec= function(
     A_0 = NULL,
     B_0 = NULL,
     delta_0 = NULL,
-    ommega_0 = NULL,
+    omega_0 = NULL,
     max_it  = 500,
     epsilon = 10E-4,
     random_block_design=FALSE,
@@ -662,14 +662,14 @@ hmdcm_vb_nondec= function(
 
   }
 
-  if(is.null(ommega_0) ){
-    ommega_0 = matrix(1,indL,indL)# For Tau matrix
-    #ommega_0 = matrix(1/indL,indL,indL)# For Tau matrix
+  if(is.null(omega_0) ){
+    omega_0 = matrix(1,indL,indL)# For Tau matrix
+    #omega_0 = matrix(1/indL,indL,indL)# For Tau matrix
 
     for(l in 1:indL){
       for(ld in 1:indL){
         dif_pat <- A[l,] - A[ld,]
-        ommega_0[l,ld] <- ifelse(any(dif_pat > 0), 0, 1)
+        omega_0[l,ld] <- ifelse(any(dif_pat > 0), 0, 1)
       }
     }
 
@@ -721,7 +721,7 @@ hmdcm_vb_nondec= function(
       for(time_t in 1:(indT-1)){
 
         E_z_itl_z_itm1l_temp <- matrix(stats::runif(indL*indL) ,ncol=indL, nrow = indL)
-        E_z_itl_z_itm1l_temp[ommega_0==0] <-0
+        E_z_itl_z_itm1l_temp[omega_0==0] <-0
         E_z_itl_z_itm1l_temp <- E_z_itl_z_itm1l_temp/ sum(E_z_itl_z_itm1l_temp)
 
         E_z_itl_z_itm1l[i,,,time_t] <- E_z_itl_z_itm1l_temp
@@ -742,7 +742,7 @@ hmdcm_vb_nondec= function(
       for(time_t in 1:(indT-1)){
 
         E_z_itl_z_itm1l_temp <- matrix(1/(indL*indL),indL,indL)
-        E_z_itl_z_itm1l_temp[ommega_0==0] <-0
+        E_z_itl_z_itm1l_temp[omega_0==0] <-0
         E_z_itl_z_itm1l[i,,,time_t] <- E_z_itl_z_itm1l_temp/ sum(E_z_itl_z_itm1l_temp)
 
       }
@@ -753,7 +753,7 @@ hmdcm_vb_nondec= function(
   #
   # Evidence of Lower Bound
   #
-  llb_fun <- function(delta_ast,delta_0,ommega_ast,ommega_0, A_ast, A_0, B_ast, B_0, log_zeta_sum){
+  llb_fun <- function(delta_ast,delta_0,omega_ast,omega_0, A_ast, A_0, B_ast, B_0, log_zeta_sum){
 
     A_0_unlist <- unlist(A_0)
     B_0_unlist <- unlist(B_0)
@@ -766,8 +766,8 @@ hmdcm_vb_nondec= function(
 
     tmp3 <- 0
     for(l in 1:indL){
-      ommega_not_0   <- ommega_0[l,]!=0
-      tmp3 <- tmp3 + (sum(lgamma(ommega_ast[l,ommega_not_0])) - lgamma(sum(ommega_ast[l,ommega_not_0])))  - (sum(lgamma(ommega_0[l,ommega_not_0])) - lgamma(sum(ommega_0[l,ommega_not_0]))) + sum((ommega_0[l,ommega_not_0] - ommega_ast[l,ommega_not_0])*(digamma(ommega_ast[l,ommega_not_0]) - digamma(sum(ommega_ast[l,ommega_not_0]))) )
+      omega_not_0   <- omega_0[l,]!=0
+      tmp3 <- tmp3 + (sum(lgamma(omega_ast[l,omega_not_0])) - lgamma(sum(omega_ast[l,omega_not_0])))  - (sum(lgamma(omega_0[l,omega_not_0])) - lgamma(sum(omega_0[l,omega_not_0]))) + sum((omega_0[l,omega_not_0] - omega_ast[l,omega_not_0])*(digamma(omega_ast[l,omega_not_0]) - digamma(sum(omega_ast[l,omega_not_0]))) )
     }
 
 
@@ -780,8 +780,8 @@ hmdcm_vb_nondec= function(
   #
   E_log_theta <- E_log_1_theta <- B_ast <- A_ast <- A_0
   delta_ast <- delta_0
-  ommega_ast <- ommega_0
-  ommega_zero_elem <- ommega_0 == 0
+  omega_ast <- omega_0
+  omega_zero_elem <- omega_0 == 0
 
 
   b_z_it <- f_z_it <- array(0, dim=c(indI, indL ,indT) )
@@ -807,14 +807,14 @@ hmdcm_vb_nondec= function(
     # M-step and Calculation of Expectations
     #
     delta_ast <- colSums(E_z_itl[,,1]) + delta_0
-    ommega_ast <- apply(E_z_itl_z_itm1l, c(2,3),sum) + ommega_0 #Check this point
+    omega_ast <- apply(E_z_itl_z_itm1l, c(2,3),sum) + omega_0 #Check this point
 
 
     E_log_pi      = digamma(delta_ast) - digamma(sum(delta_ast))
-    #digamma_omega <- try(digamma(ommega_ast))
-    #digamma_omega[ommega_zero_elem]  <- 0
-    E_log_tau     = try(digamma(ommega_ast), silent = T)  - digamma(rowSums(ommega_ast))
-    E_log_tau[ommega_zero_elem]  <- 0
+    #digamma_omega <- try(digamma(omega_ast))
+    #digamma_omega[omega_zero_elem]  <- 0
+    E_log_tau     = try(digamma(omega_ast), silent = T)  - digamma(rowSums(omega_ast))
+    E_log_tau[omega_zero_elem]  <- 0
 
 
     #
@@ -865,7 +865,7 @@ hmdcm_vb_nondec= function(
     #
 
     exp_E_log_tau <- exp(E_log_tau)
-    exp_E_log_tau[ommega_zero_elem] <- 0
+    exp_E_log_tau[omega_zero_elem] <- 0
 
     for(time_t in 2:indT){
       #
@@ -912,7 +912,7 @@ hmdcm_vb_nondec= function(
 
     log_zeta_sum <- sum(log(gamma_t_x_it))
 
-    l_lb[m+1] <- llb_fun(delta_ast,delta_0,ommega_ast,ommega_0, A_ast, A_0, B_ast, B_0, log_zeta_sum)
+    l_lb[m+1] <- llb_fun(delta_ast,delta_0,omega_ast,omega_0, A_ast, A_0, B_ast, B_0, log_zeta_sum)
 
     if(verbose){
       cat("\riteration = ", m+1, sprintf(",last change = %.05f", abs(l_lb[m] - l_lb[m+1])))
@@ -939,10 +939,10 @@ hmdcm_vb_nondec= function(
   names(pi_est) <- att_pat
   names(pi_sd)  <- att_pat
 
-  ommega_sum <- rowSums(ommega_ast)
-  Tau_est <-  ommega_ast/ommega_sum
+  omega_sum <- rowSums(omega_ast)
+  Tau_est <-  omega_ast/omega_sum
   Tau_sd <- matrix(0, indL, indL)
-  for(l in 1:indL) Tau_sd[,l] <- sqrt(ommega_ast[,l]*(ommega_sum - ommega_ast[,l])/(ommega_sum^2*(ommega_sum+1)) )
+  for(l in 1:indL) Tau_sd[,l] <- sqrt(omega_ast[,l]*(omega_sum - omega_ast[,l])/(omega_sum^2*(omega_sum+1)) )
 
   colnames(Tau_est) <- att_pat
   row.names(Tau_est) <- att_pat
@@ -987,13 +987,13 @@ hmdcm_vb_nondec= function(
        A_ast = A_ast,
        B_ast = B_ast,
        delta_ast   = delta_ast,
-       ommega_ast   = ommega_ast,
+       omega_ast   = omega_ast,
        E_z_itl = E_z_itl,
        E_z_itl_z_itm1l = E_z_itl_z_itm1l,
        A_0 = A_0,
        B_0 = B_0,
        delta_0 = delta_0,
-       ommega_0 = ommega_0,
+       omega_0 = omega_0,
        l_lb = l_lb,
        gamma_t_x_it = gamma_t_x_it,
        log_zeta_sum = log_zeta_sum,
@@ -1026,7 +1026,7 @@ hm_dcm = function(
     A_0 = NULL,
     B_0 = NULL,
     delta_0 = NULL,
-    ommega_0 = NULL
+    omega_0 = NULL
 ){
 
 
@@ -1049,13 +1049,13 @@ hm_dcm = function(
                    random_block_design=random_block_design,
                    Test_versions=Test_versions,Test_order=Test_order,
                    verbose=verbose,random_start=random_start,A_0=A_0,B_0=B_0,
-                   delta_0=delta_0,ommega_0=ommega_0)
+                   delta_0=delta_0,omega_0=omega_0)
   }else{
     res = hmdcm_vb_nondec(X=X,Q=Q,max_it=max_it,epsilon=epsilon,measurement_model=measurement_model,
                           random_block_design=random_block_design,
                           Test_versions=Test_versions,Test_order=Test_order,
                           verbose=verbose,random_start=random_start,A_0=A_0,B_0=B_0,
-                          delta_0=delta_0,ommega_0=ommega_0)
+                          delta_0=delta_0,omega_0=omega_0)
   }
 
   model_params = list(
@@ -1075,13 +1075,13 @@ hm_dcm = function(
        A_ast = res$A_ast,
        B_ast = res$B_ast,
        delta_ast = res$delta_ast,
-       ommega_ast = res$ommega_ast,
+       omega_ast = res$omega_ast,
        E_z_itl = res$E_z_itl,
        E_z_itl_z_itm1l = res$E_z_itl_z_itm1l,
        A_0 = res$A_0,
        B_0 = res$B_0,
        delta_0 = res$delta_0,
-       ommega_0 = res$ommega_0,
+       omega_0 = res$omega_0,
        l_lb = res$l_lb[res$l_lb != 0],
        #gamma_t_x_it = res$gamma_t_x_it,
        #log_zeta_sum = res$log_zeta_sum,

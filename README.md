@@ -35,4 +35,4 @@ This package was developed as part of the project supported by JST, PRESTO Grant
 
 -   Yamaguchi, K. (2020). Variational Bayesian inference for the multiple-choice DINA model. *Behaviormetrika*. <https://doi.org/10.1007/s41237-020-00104-w>
 
--   Yamaguchi, K., & Martinez, A. J. (2023). Variational Bayes inference for hidden Markov diagnostic classification models. *British Journal of Mathematical and Statistical Psychology*. <https://doi.org/10.1111/bmsp.12308>
+-   Yamaguchi, K., & Martinez, A. J. (2024). Variational Bayes inference for hidden Markov diagnostic classification models. *British Journal of Mathematical and Statistical Psychology*. <https://doi.org/10.1111/bmsp.12308>

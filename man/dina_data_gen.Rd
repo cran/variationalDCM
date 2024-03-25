@@ -2,16 +2,16 @@
 % Please edit documentation in R/dina.R
 \name{dina_data_gen}
 \alias{dina_data_gen}
-\title{the artificial data generation for the DINA model based on the given Q-matrix}
+\title{Artificial data generating function for the DINA model based on the given Q-matrix}
 \usage{
-dina_data_gen(Q, I, cor = 0.1, s = 0.2, g = 0.2, seed = 17)
+dina_data_gen(Q, I, attr_cor = 0.1, s = 0.2, g = 0.2, seed = 17)
 }
 \arguments{
-\item{Q}{the J by K binary matrix}
+\item{Q}{the \eqn{J \times K} binary matrix}
 
 \item{I}{the number of assumed respondents}
 
-\item{cor}{the true value of the correlation among attributes (default: 0.1)}
+\item{attr_cor}{the true value of the correlation among attributes (default: 0.1)}
 
 \item{s}{the true value of the slip parameter (default: 0.2)}
 

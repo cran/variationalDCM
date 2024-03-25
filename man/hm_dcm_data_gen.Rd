@@ -2,21 +2,21 @@
 % Please edit documentation in R/hm_dcm.R
 \name{hm_dcm_data_gen}
 \alias{hm_dcm_data_gen}
-\title{the artificial data generation for the hidden-Markov DCM based on the given Q-matrix}
+\title{Artificial data generating function for the hidden-Markov DCM based on the given Q-matrix}
 \usage{
 hm_dcm_data_gen(
   I = 500,
   Q,
   min_theta = 0.2,
   max_theta = 0.8,
-  att_cor = 0.7,
+  att_cor = 0.1,
   seed = 17
 )
 }
 \arguments{
 \item{I}{the number of assumed respondents}
 
-\item{Q}{the J by K binary matrix}
+\item{Q}{the \eqn{J \times K} binary matrix}
 
 \item{min_theta}{the minimum value of the item parameter \eqn{\theta_{jht}}}
 
@@ -45,7 +45,7 @@ hm_sim_data = hm_dcm_data_gen(Q=hm_sim_Q,I=200)
 
 }
 \references{
-Yamaguchi, K., & Martinez, A. J. (2023). Variational Bayes
+Yamaguchi, K., & Martinez, A. J. (2024). Variational Bayes
 inference for hidden Markov diagnostic classification models. \emph{British Journal
-of Mathematical and Statistical Psychology}, 00, 1– 25. \doi{10.1111/bmsp.12308}
+of Mathematical and Statistical Psychology}, 77(1), 55–79. \doi{10.1111/bmsp.12308}
 }

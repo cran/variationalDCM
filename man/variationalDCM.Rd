@@ -101,7 +101,7 @@ and hyperparameters as the DINA model.  We thus refer the readers to the DINA mo
   have additional arguments \code{nondecreasing_attribute},
   \code{measurement_model}, \code{random_block_design}, \code{Test_versions},
   \code{Test_order}, \code{random_start}, \code{A_0}, \code{B_0},
-  \code{delta_0}, and \code{ommega_0}. Users can accommodate the
+  \code{delta_0}, and \code{omega_0}. Users can accommodate the
   nondecreasing attribute constraint, which represents the assumption that
   mastered attributes are not forgotten, by setting the logical valued
   argument \code{nondecreasing_attribute} as \code{TRUE} (default:
@@ -116,20 +116,23 @@ and hyperparameters as the DINA model.  We thus refer the readers to the DINA mo
   version of the test each respondent has been assigned to based on a random
   block design, while \code{Test_order} indicates the sequence in which items
   are rearranged based on the random block design. \code{A_0}, \code{B_0},
-  \code{delta_0}, and \code{ommega_0} correspond to hyperparameters
+  \code{delta_0}, and \code{omega_0} correspond to hyperparameters
   \eqn{\mathbf{A}^0}, \eqn{\mathbf{B}^0}, \eqn{\boldsymbol{\delta}^0}, and
   \eqn{\boldsymbol{\Omega}^0}. \eqn{\boldsymbol{\Omega}^0} is nonnegative
   hyperparameters of Dirichlet distributions for attribute transition
-  probabilities. \code{ommega_0} is by default set to \code{NULL}, and then
+  probabilities. \code{omega_0} is by default set to \code{NULL}, and then
   we set \eqn{\boldsymbol{\Omega}^0=\mathbf{1}_L\mathbf{1}_L^\top}.
 }
 
 \examples{
+
 # fit the DINA model
 Q = sim_Q_J80K5
 sim_data = dina_data_gen(Q=Q,I=200)
 res = variationalDCM(X=sim_data$X, Q=Q, model="dina")
 summary(res)
+
+
 
 }
 \references{
@@ -145,8 +148,8 @@ Yamaguchi, K., & Okada, K. (2020). Variational Bayes inference
   the Saturated Diagnostic Classification Model. \emph{Psychometrika}, 85(4),
   973–995. \doi{10.1007/s11336-020-09739-w}
 
-  Yamaguchi, K., & Martinez, A. J. (2023). Variational Bayes inference for
+  Yamaguchi, K., & Martinez, A. J. (2024). Variational Bayes inference for
   hidden Markov diagnostic classification models. \emph{British Journal of
-  Mathematical and Statistical Psychology}, 77, 55–79.
+  Mathematical and Statistical Psychology}, 77(1), 55–79.
   \doi{10.1111/bmsp.12308}
 }
